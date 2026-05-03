@@ -21,7 +21,8 @@ import { AdminGuard } from './guards/admin.guard';
 import { UsersService } from '../users/users.service';
 import { PollsService } from '../polls/polls.service';
 import { UpdateUserDto } from '../users/dto/update-user.dto';
-import { PollQueryDto } from '../polls/dto/poll-query.dto';
+import { AdminUsersQueryDto } from './dto/admin-users-query.dto';
+import { AdminPollsQueryDto } from './dto/admin-polls-query.dto';
 
 @ApiTags('admin')
 @Controller('admin')
@@ -33,11 +34,13 @@ export class AdminController {
     private readonly pollsService: PollsService,
   ) {}
 
+  // ─── Users ──────────────────────────────────────────────────────────────────
+
   @Get('users')
   @ApiOperation({ summary: 'Get all users (admin only)' })
   @ApiResponse({ status: 200, description: 'Paginated list of users' })
   @ApiResponse({ status: 403, description: 'Admin access required' })
-  async getUsers(@Query() query: { page?: number; limit?: number }) {
+  async getUsers(@Query() query: AdminUsersQueryDto) {
     return this.usersService.findAll(query);
   }
 
@@ -50,11 +53,23 @@ export class AdminController {
     return this.usersService.updateRole(id, dto);
   }
 
+  @Delete('users/:id')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @ApiOperation({ summary: 'Delete a user (admin only)' })
+  @ApiResponse({ status: 204, description: 'User deleted' })
+  @ApiResponse({ status: 403, description: 'Admin access required' })
+  @ApiResponse({ status: 404, description: 'User not found' })
+  async deleteUser(@Param('id') id: string) {
+    return this.usersService.deleteById(id);
+  }
+
+  // ─── Polls ──────────────────────────────────────────────────────────────────
+
   @Get('polls')
   @ApiOperation({ summary: 'Get all polls (admin only)' })
   @ApiResponse({ status: 200, description: 'Paginated list of all polls' })
   @ApiResponse({ status: 403, description: 'Admin access required' })
-  async getPolls(@Query() query: PollQueryDto) {
+  async getPolls(@Query() query: AdminPollsQueryDto) {
     return this.pollsService.findAllAdmin(query);
   }
 

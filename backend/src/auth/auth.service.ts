@@ -33,13 +33,20 @@ export class AuthService {
         email: dto.email,
         passwordHash,
       },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        role: true,
+        createdAt: true,
+      },
     });
 
     const tokens = await this.generateTokens(user.id, user.role);
     await this.storeRefreshToken(user.id, tokens.refreshToken);
 
     return {
-      user: { id: user.id, name: user.name, email: user.email, role: user.role },
+      user: { id: user.id, name: user.name, email: user.email, role: user.role, createdAt: user.createdAt.toISOString() },
       accessToken: tokens.accessToken,
       refreshToken: tokens.refreshToken,
     };
@@ -62,7 +69,7 @@ export class AuthService {
     await this.storeRefreshToken(user.id, tokens.refreshToken);
 
     return {
-      user: { id: user.id, name: user.name, email: user.email, role: user.role },
+      user: { id: user.id, name: user.name, email: user.email, role: user.role, createdAt: user.createdAt.toISOString() },
       accessToken: tokens.accessToken,
       refreshToken: tokens.refreshToken,
     };

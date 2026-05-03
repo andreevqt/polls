@@ -11,6 +11,7 @@ import { PollQueryDto } from './dto/poll-query.dto';
 import { ReplaceQuestionsDto } from '../questions/dto/replace-questions.dto';
 import { generateSlug } from '../common/utils/slugify';
 import { getPaginationParams } from '../common/utils/pagination';
+import type { AdminPollsQueryDto } from '../admin/dto/admin-polls-query.dto';
 
 const POLL_INCLUDE = {
   owner: { select: { id: true, name: true } },
@@ -60,6 +61,7 @@ export class PollsService {
       slug: poll.slug,
       description: poll.description,
       visibility: poll.visibility,
+      isActive: poll.isActive,
       expiresAt: poll.expiresAt,
       responseCount: poll._count.responses,
       owner: poll.owner,
@@ -251,20 +253,44 @@ export class PollsService {
     });
   }
 
-  async findAllAdmin(query: PollQueryDto) {
+  async findAllAdmin(query: AdminPollsQueryDto) {
     const { skip, take, page, limit } = getPaginationParams(query);
+
+    const where: any = {};
+
+    if (query.search) {
+      where.title = { contains: query.search, mode: 'insensitive' };
+    }
+
+    if (query.visibility) {
+      where.visibility = query.visibility;
+    }
+
+    if (query.isActive !== undefined && query.isActive !== ('' as any)) {
+      where.isActive = query.isActive;
+    }
+
+    // Build orderBy — responseCount requires a special _count sort
+    let orderBy: any = { createdAt: 'desc' };
+    const sortOrder = query.sortOrder ?? 'desc';
+    if (query.sortBy === 'responseCount') {
+      orderBy = { responses: { _count: sortOrder } };
+    } else if (query.sortBy) {
+      orderBy = { [query.sortBy]: sortOrder };
+    }
 
     const [polls, total] = await Promise.all([
       this.prisma.poll.findMany({
         skip,
         take,
-        orderBy: { createdAt: 'desc' },
+        where,
+        orderBy,
         include: {
           owner: { select: { id: true, name: true } },
           _count: { select: { responses: true } },
         },
       }),
-      this.prisma.poll.count(),
+      this.prisma.poll.count({ where }),
     ]);
 
     const data = polls.map((poll) => ({

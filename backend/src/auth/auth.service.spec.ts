@@ -63,6 +63,7 @@ describe('AuthService', () => {
     };
 
     it('should register a new user and return tokens', async () => {
+      const createdAt = new Date('2024-01-15T10:00:00.000Z');
       mockPrismaService.user.findUnique.mockResolvedValue(null);
       (mockBcrypt.hash as jest.Mock).mockResolvedValue('hashed-password');
       mockPrismaService.user.create.mockResolvedValue({
@@ -70,6 +71,7 @@ describe('AuthService', () => {
         name: 'Alice',
         email: 'alice@example.com',
         role: 'USER',
+        createdAt,
       });
       mockJwtService.signAsync
         .mockResolvedValueOnce('access-token')
@@ -80,7 +82,7 @@ describe('AuthService', () => {
       const result = await service.register(registerDto);
 
       expect(result).toEqual({
-        user: { id: 'user-id', name: 'Alice', email: 'alice@example.com', role: 'USER' },
+        user: { id: 'user-id', name: 'Alice', email: 'alice@example.com', role: 'USER', createdAt: createdAt.toISOString() },
         accessToken: 'access-token',
         refreshToken: 'refresh-token',
       });
@@ -102,12 +104,14 @@ describe('AuthService', () => {
     const loginDto = { email: 'alice@example.com', password: 'StrongPass123!' };
 
     it('should login and return tokens for valid credentials', async () => {
+      const createdAt = new Date('2024-01-15T10:00:00.000Z');
       const user = {
         id: 'user-id',
         name: 'Alice',
         email: 'alice@example.com',
         role: 'USER',
         passwordHash: 'hashed-password',
+        createdAt,
       };
       mockPrismaService.user.findUnique.mockResolvedValue(user);
       (mockBcrypt.compare as jest.Mock).mockResolvedValue(true);
@@ -120,7 +124,7 @@ describe('AuthService', () => {
       const result = await service.login(loginDto);
 
       expect(result).toEqual({
-        user: { id: 'user-id', name: 'Alice', email: 'alice@example.com', role: 'USER' },
+        user: { id: 'user-id', name: 'Alice', email: 'alice@example.com', role: 'USER', createdAt: createdAt.toISOString() },
         accessToken: 'access-token',
         refreshToken: 'refresh-token',
       });
