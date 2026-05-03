@@ -13,12 +13,22 @@ export class SubmitAnswerDto {
   @IsUUID()
   questionId: string;
 
-  @ApiPropertyOptional({ example: 'option-uuid' })
+  @ApiPropertyOptional({ example: 'option-uuid', description: 'For SINGLE_CHOICE questions' })
   @IsOptional()
   @IsUUID()
   optionId?: string;
 
-  @ApiPropertyOptional({ example: 'My comment' })
+  @ApiPropertyOptional({
+    example: ['option-uuid-1', 'option-uuid-2'],
+    description: 'For MULTIPLE_CHOICE questions — list of selected option IDs',
+    type: [String],
+  })
+  @IsOptional()
+  @IsArray()
+  @IsUUID('4', { each: true })
+  optionIds?: string[];
+
+  @ApiPropertyOptional({ example: 'My comment', description: 'For TEXT questions' })
   @IsOptional()
   @IsString()
   textValue?: string;

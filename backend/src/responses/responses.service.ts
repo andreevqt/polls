@@ -68,18 +68,24 @@ export class ResponsesService {
           `Required question "${question.text}" is not answered`,
         );
       }
-      if (
-        question.type !== 'TEXT' &&
-        !answer.optionId
-      ) {
-        throw new BadRequestException(
-          `Required question "${question.text}" requires an option selection`,
-        );
-      }
-      if (question.type === 'TEXT' && !answer.textValue) {
-        throw new BadRequestException(
-          `Required question "${question.text}" requires a text answer`,
-        );
+      if (question.type === 'MULTIPLE_CHOICE') {
+        if (!answer.optionIds || answer.optionIds.length === 0) {
+          throw new BadRequestException(
+            `Required question "${question.text}" requires at least one option selection`,
+          );
+        }
+      } else if (question.type === 'SINGLE_CHOICE') {
+        if (!answer.optionId) {
+          throw new BadRequestException(
+            `Required question "${question.text}" requires an option selection`,
+          );
+        }
+      } else if (question.type === 'TEXT') {
+        if (!answer.textValue) {
+          throw new BadRequestException(
+            `Required question "${question.text}" requires a text answer`,
+          );
+        }
       }
     }
 
@@ -91,11 +97,22 @@ export class ResponsesService {
           userId: userId || null,
           respondentFingerprint: fingerprint || dto.respondentFingerprint || null,
           answers: {
-            create: dto.answers.map((a) => ({
-              questionId: a.questionId,
-              optionId: a.optionId || null,
-              textValue: a.textValue || null,
-            })),
+            create: dto.answers.flatMap((a) => {
+              // MULTIPLE_CHOICE: one Answer record per selected optionId
+              if (a.optionIds && a.optionIds.length > 0) {
+                return a.optionIds.map((optionId) => ({
+                  questionId: a.questionId,
+                  optionId,
+                  textValue: null,
+                }));
+              }
+              // SINGLE_CHOICE or TEXT
+              return [{
+                questionId: a.questionId,
+                optionId: a.optionId || null,
+                textValue: a.textValue || null,
+              }];
+            }),
           },
         },
       });

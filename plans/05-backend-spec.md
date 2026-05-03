@@ -253,15 +253,33 @@ class CreatePollDto {
 ```typescript
 class SubmitAnswerDto {
   @IsUUID() questionId: string;
+
+  // Для SINGLE_CHOICE — один выбранный вариант
   @IsOptional() @IsUUID() optionId?: string;
+
+  // Для MULTIPLE_CHOICE — список выбранных вариантов (≥1)
+  @IsOptional() @IsArray() @IsUUID('4', { each: true }) optionIds?: string[];
+
+  // Для TEXT — текстовый ответ
   @IsOptional() @IsString() textValue?: string;
 }
 
 class SubmitResponseDto {
   @IsArray() @ValidateNested({ each: true }) @Type(() => SubmitAnswerDto)
   answers: SubmitAnswerDto[];
+
+  @IsOptional() @IsString() respondentFingerprint?: string;
 }
 ```
+
+#### Логика создания `Answer` записей
+| Тип вопроса | Поле в DTO | Результат в БД |
+|---|---|---|
+| `SINGLE_CHOICE` | `optionId: "uuid"` | 1 запись `Answer` с `optionId` |
+| `MULTIPLE_CHOICE` | `optionIds: ["uuid1", "uuid2"]` | N записей `Answer`, по одной на каждый `optionId` |
+| `TEXT` | `textValue: "текст"` | 1 запись `Answer` с `textValue` |
+
+Реализация через `flatMap` в транзакции — `optionIds` разворачивается в отдельные `Answer` записи.
 
 ---
 
