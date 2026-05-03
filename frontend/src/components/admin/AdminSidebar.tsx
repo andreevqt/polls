@@ -5,15 +5,14 @@ import { logout } from '../../api/auth';
 interface NavItem {
   label: string;
   to: string;
-  icon: string;
 }
 
 const navItems: NavItem[] = [
-  { label: 'Dashboard', to: '/admin', icon: '📊' },
-  { label: 'Users', to: '/admin/users', icon: '👥' },
-  { label: 'Polls', to: '/admin/polls', icon: '📋' },
-  { label: 'Analytics', to: '/admin/analytics', icon: '📈' },
-  { label: 'System', to: '/admin/system', icon: '🖥️' },
+  { label: 'Dashboard', to: '/admin'},
+  { label: 'Users', to: '/admin/users'},
+  { label: 'Polls', to: '/admin/polls'},
+  { label: 'Analytics', to: '/admin/analytics'},
+  { label: 'System', to: '/admin/system'  },
 ];
 
 export default function AdminSidebar() {
@@ -57,7 +56,6 @@ export default function AdminSidebar() {
                   }`
                 }
               >
-                <span className="text-base">{item.icon}</span>
                 {item.label}
               </NavLink>
             </li>

@@ -49,3 +49,9 @@ docker-compose.override.yml
 
 # TypeScript
 *.tsbuildinfo
+
+# E2E test results (Playwright)
+frontend/test-results/
+frontend/e2e-report/
+playwright-report/
+test-results/

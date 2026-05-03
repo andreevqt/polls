@@ -25,9 +25,19 @@ export async function loginViaUI(
   credentials: TestCredentials = ADMIN_CREDENTIALS,
 ): Promise<void> {
   await page.goto('/login')
-  await page.getByLabel(/email/i).fill(credentials.email)
-  await page.getByLabel(/password/i).fill(credentials.password)
-  await page.getByRole('button', { name: /sign in|log in/i }).click()
+
+  // Wait for the form to be fully loaded and stable
+  await page.waitForSelector('form', { timeout: 5000 })
+
+  // Use more stable selectors with explicit IDs
+  await page.locator('#email').fill(credentials.email)
+  await page.locator('#password').fill(credentials.password)
+
+  // Wait for the button to be visible and enabled before clicking
+  const loginButton = page.locator('button[type="submit"]')
+  await loginButton.waitFor({ state: 'visible', timeout: 5000 })
+  await loginButton.click()
+
   // Wait for redirect away from login page
   await page.waitForURL((url) => !url.pathname.includes('/login'), { timeout: 10_000 })
 }
