@@ -210,7 +210,7 @@ npx prisma db seed
 2. Add route: `{ path: '/dashboard/polls/:slug/analytics', element: <PollAnalyticsPage /> }` (protected)
 3. Use TanStack Query: `useQuery(['analytics', slug])` → `GET /api/v1/analytics/:slug`
 4. Recharts `LineChart` for `responsesOverTime`
-5. CSV export: `GET /api/v1/analytics/:slug/export` — trigger via `window.open()` or `<a href>` with the auth token
+5. CSV export: `GET /api/v1/analytics/:slug/export` — fetch via `apiClient` with `responseType: 'blob'`, create a temporary object URL via `URL.createObjectURL(blob)`, trigger download via a programmatic `<a>` click, then revoke the URL. **Do NOT use `window.open` or embed the auth token in the URL** (tokens in URLs are logged by servers/proxies).
 
 ---
 

@@ -161,7 +161,7 @@ export async function getAdminAnalytics(): Promise<AdminAnalyticsData> {
   };
 
   return {
-    stats: { totalUsers, totalPolls, totalResponses },
+    stats: { totalUsers, totalPolls, activePolls: 0, totalResponses },
     pollsOverTime: countByDay(polls),
     usersOverTime: countByDay(users),
     responsesOverTime: days.map((date) => ({ date, count: 0 })), // placeholder

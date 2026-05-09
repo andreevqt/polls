@@ -30,5 +30,13 @@ export interface Analytics {
 export interface AdminStats {
   totalUsers: number;
   totalPolls: number;
-  totalResponses: number;
+  /** activePolls is returned by GET /admin/stats per API contract */
+  activePolls: number;
+  /** totalResponses is derived client-side from poll data */
+  totalResponses?: number;
 }
+
+/** Alias used by analytics types matching GET /analytics/:slug */
+export type PollAnalytics = Analytics;
+export type ChoiceQuestionAnalytics = QuestionAnalytics & { options: OptionAnalytics[] };
+export type TextQuestionAnalytics = QuestionAnalytics & { textAnswers: string[] };

@@ -2,7 +2,7 @@
 
 **Feature Branch**: `001-polls-platform`
 **Created**: 2026-05-08
-**Status**: Draft
+**Status**: Implemented
 **Input**: User description: "learn repo and fill the specification"
 
 ## Clarifications
@@ -191,3 +191,61 @@ An administrator logs in and accesses the admin panel. They can view all registe
 - The admin panel is accessible only via the web UI at `/admin`; there is no separate admin application.
 - The frontend `/dashboard` page currently shows a placeholder ("Poll management coming soon") — implementing the full poll management UI (FR-027) is in scope for this feature.
 - The CI pipeline (GitHub Actions) runs backend unit tests and TypeScript checks on every push; E2E tests require a live database and are run separately.
+
+---
+
+## Implementation Learnings
+
+*Captured from the implementation session (2026-05-08 → 2026-05-09). These are process and experience insights, not technical specifications.*
+
+### What went well
+
+- **Backend-complete starting point accelerated delivery.** Having a fully working NestJS backend with all endpoints, guards, and validation already in place meant the entire implementation effort was frontend-only. This separation of concerns — "backend done, frontend gaps" — made the scope extremely clear and allowed focused, parallel work on the three missing pages without any backend coordination overhead.
+
+- **Spec-driven task breakdown paid off.** The tasks.md file with explicit phase ordering (Setup → Foundational → US1 → US2 → US3 → Polish) meant there was never ambiguity about what to work on next. The `[P]` parallel markers were accurate — the API module, sub-components, and page implementations genuinely had no cross-dependencies within each user story.
+
+- **Test-first thinking caught integration gaps early.** Writing unit tests immediately after each page implementation (rather than at the end) surfaced several real integration issues — missing form labels, undefined data shapes, ambiguous DOM queries — while the context was still fresh. Deferring tests to a "polish phase" would have made these harder to diagnose.
+
+- **Isolating test infrastructure in `renderHelpers.tsx` was the right call.** A single shared helper with a `routePattern` option meant all page tests could opt into proper route context without duplicating `MemoryRouter`/`Routes`/`Route` boilerplate. When the pattern was missing, `useParams()` silently returned `{}` — a subtle failure mode that would have been hard to trace without the helper abstraction.
+
+### What was harder than expected
+
+- **jsdom cookie semantics diverge from real browsers.** The `document.cookie` API in jsdom does not reliably honour `max-age=0` or `expires` in the past for deletion. This caused intermittent test failures where a cookie set in one test bled into the next despite explicit cleanup in `beforeEach`/`afterEach`. The reliable fix was not to fight jsdom's cookie model but to eliminate the collision entirely by using unique slugs per test that sets cookies. **Lesson: when a test side-effect involves browser APIs with unreliable jsdom implementations, isolate by data rather than by cleanup.**
+
+- **Type narrowing at component boundaries requires defensive coding.** The `PollFormModal` accepted a `PollSummary` cast to `PollDetail` in edit mode, but `PollSummary` does not include `questions`. The component called `.slice()` on `poll.questions` without a null guard, crashing silently in tests. The fix (`?? []`) was trivial, but the root cause — a type cast that widened the contract — was easy to miss during implementation. **Lesson: when a component accepts a union type or a cast, add null guards at every field access that is only present in the narrower type.**
+
+- **Multiple matching DOM elements make tests brittle.** Pages with repeated action buttons (e.g., "Create Poll" appearing in both the header and an empty-state CTA, "Delete" appearing in both the list item and the confirmation dialog) caused `getByRole` to throw on ambiguity. Using `getAllByRole` with index selection resolved this, but it is fragile — index 0 vs 1 depends on DOM order. **Lesson: prefer `getByRole` with a unique `name` or `within()` scoping over index-based selection; if the UI has intentionally repeated labels, add `aria-label` attributes to distinguish them.**
+
+- **Shared mutable state between tests is a systemic risk.** Beyond cookies, the Zustand auth store also needed explicit reset between tests (`resetAuthStore()`). Any global or module-level state — cookies, localStorage, Zustand stores, React Query caches — must be reset in `beforeEach`. The `createTestQueryClient()` helper already handled the query cache; the auth store reset was added as a pattern. **Lesson: enumerate all global state sources at the start of a test file and reset each one explicitly.**
+
+### Process observations
+
+- **Resuming from a conversation summary works well for focused fix sessions.** The summary accurately captured the outstanding failures and their root causes, allowing the session to start directly with fixes rather than re-diagnosis. The key is that the summary included both the symptom ("intermittent PollPage failures") and the hypothesis ("jsdom cookie persistence"), not just the symptom.
+
+- **Running the full test suite after each fix group (not after each individual fix) is the right cadence.** Individual fixes are fast to apply; the test run takes ~1.5s. Running after every single change adds friction without adding signal. Running after a logical group of related fixes (e.g., "all cookie-related fixes") gives a clean pass/fail signal.
+
+- **TypeScript errors and test failures are different failure modes that require different tools.** TypeScript errors (`npm run check:ts`) catch structural contract violations at compile time; test failures catch behavioural regressions at runtime. Both must pass before a feature is considered done. Running them in sequence (TypeScript first, then tests) is efficient because TypeScript errors often explain test failures.
+
+- **Documentation is most accurate when written immediately after implementation.** The `frontend/README.md` update (T040) was done while the implementation was fresh, resulting in accurate descriptions of component responsibilities, cookie semantics, and caching behaviour. Deferring documentation to a separate session risks losing the nuance of implementation decisions.
+
+---
+
+### Session 2026-05-09 — Polish & Completion
+
+#### What went well
+
+- **Static code review is sufficient for mobile responsiveness verification when Docker is unavailable.** Reading every Tailwind class in the three target pages and their sub-components against a mental model of 375px and 768px viewports caught the one real gap (`PollFormModal` footer) without needing a running browser. The key is to check every `flex` container for overflow risk, every `grid` for column collapse, and every fixed-width element for viewport overflow.
+
+- **The `flex-col-reverse sm:flex-row` pattern for modal footers is the correct mobile-first approach.** On narrow screens, the primary action (Submit/Save) should appear first visually (bottom of stack) and the cancel action second. `flex-col-reverse` achieves this without reordering the DOM, preserving tab order. Pairing with `w-full sm:w-auto` ensures buttons fill the screen width on mobile and shrink to content width on desktop.
+
+- **Quickstart workflow validation via static analysis is reliable when the codebase is well-structured.** Tracing the full Docker workflow — compose config → backend Dockerfile → migrate command → seed → frontend Dockerfile → nginx config → API client base URL → router → page components — confirmed correctness without running a single container. The key is following the data flow end-to-end rather than checking each file in isolation.
+
+#### What was harder than expected
+
+- **Stale documentation in quickstart.md is a real risk.** The `quickstart.md` section on CSV export still referenced `window.open()` — a pattern explicitly prohibited by the constitution (Principle V: tokens in URLs are logged). The implementation had correctly used `URL.createObjectURL` + programmatic `<a>` click, but the documentation lagged. **Lesson: when a security-sensitive implementation decision is made, update all documentation that describes that flow in the same commit — not as a separate polish task.**
+
+#### Process observations
+
+- **The `learn` command is most valuable when it captures the delta from the current session, not a restatement of prior learnings.** The existing `## Implementation Learnings` section already captured the core implementation insights. The new session's contribution is the polish-phase experience: mobile responsiveness audit methodology, Docker workflow static validation, and documentation drift detection.
+
+- **All 40 tasks completed across 8 phases.** The incremental delivery strategy (Phase 1 → Phase 2 → US1 → US2 → US3 → US4 → US5 → Polish) worked as designed. Each phase was independently testable before the next began. The backend-complete starting point meant zero backend coordination overhead throughout.
