@@ -85,7 +85,7 @@ export default function AdminAnalyticsPage() {
               />
               <StatCard
                 title="Total Responses"
-                value={data.stats.totalResponses}
+                value={data.stats.totalResponses ?? 0}
                 icon="💬"
                 description="Across all polls"
               />

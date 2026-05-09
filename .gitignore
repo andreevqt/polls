@@ -55,3 +55,6 @@ frontend/test-results/
 frontend/e2e-report/
 playwright-report/
 test-results/
+
+# other
+.codeassistant

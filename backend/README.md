@@ -1,49 +1,49 @@
 # Polls Backend
 
-NestJS REST API для приложения опросов. Предоставляет аутентификацию, управление опросами, сбор ответов и аналитику.
+NestJS REST API for the polls application. Provides authentication, poll management, response collection, and analytics.
 
-## Технологический стек
+## Tech Stack
 
 - **Runtime:** Node.js 20 LTS
 - **Framework:** NestJS 10
 - **ORM:** Prisma 5
-- **База данных:** PostgreSQL 16
-- **Аутентификация:** JWT (access + refresh токены)
-- **Документация:** Swagger / OpenAPI 3.0
+- **Database:** PostgreSQL 16
+- **Authentication:** JWT (access + refresh tokens)
+- **Documentation:** Swagger / OpenAPI 3.0
 
 ---
 
-## Требования
+## Requirements
 
-- Node.js >= 20 (см. `.nvmrc`)
+- Node.js >= 20 (see `.nvmrc`)
 - npm >= 10
-- PostgreSQL 16 (локально или через Docker)
+- PostgreSQL 16 (local or via Docker)
 
 ---
 
-## Быстрый старт
+## Quick Start
 
-### 1. Установить зависимости
+### 1. Install dependencies
 
-Из корня монорепо (рекомендуется):
+From the monorepo root (recommended):
 
 ```bash
 npm install
 ```
 
-Или напрямую из директории бэкенда:
+Or directly from the backend directory:
 
 ```bash
 cd backend && npm install
 ```
 
-### 2. Настроить переменные окружения
+### 2. Configure environment variables
 
 ```bash
 cp backend/.env.example backend/.env
 ```
 
-Отредактировать `backend/.env`:
+Edit `backend/.env`:
 
 ```env
 DATABASE_URL=postgresql://postgres:password@localhost:5432/polls
@@ -55,11 +55,11 @@ FRONTEND_URL=http://localhost:5173
 PORT=3000
 ```
 
-> ⚠️ Никогда не коммитьте `.env` в репозиторий. Файл добавлен в `.gitignore`.
+> ⚠️ Never commit `.env` to the repository. The file is listed in `.gitignore`.
 
-### 3. Запустить PostgreSQL
+### 3. Start PostgreSQL
 
-Если PostgreSQL не установлен локально, поднять через Docker:
+If PostgreSQL is not installed locally, start it via Docker:
 
 ```bash
 docker run -d \
@@ -71,276 +71,276 @@ docker run -d \
   postgres:16-alpine
 ```
 
-Или через Docker Compose из корня монорепо (только БД):
+Or via Docker Compose from the monorepo root (database only):
 
 ```bash
 docker-compose up postgres -d
 ```
 
-### 4. Применить миграции
+### 4. Apply migrations
 
 ```bash
 cd backend
 npx prisma migrate deploy
 ```
 
-### 5. Запустить сервер
+### 5. Start the server
 
 ```bash
-# из корня монорепо
+# from the monorepo root
 npm run start:dev
 
-# или напрямую
+# or directly
 cd backend && npm run start:dev
 ```
 
-Сервер запустится на `http://localhost:3000`.
+The server starts at `http://localhost:3000`.
 Swagger UI: `http://localhost:3000/api/docs`
 
 ---
 
-## Миграции базы данных
+## Database Migrations
 
-Все команды Prisma выполняются из директории `backend/`.
+All Prisma commands are run from the `backend/` directory.
 
-### Применить существующие миграции
+### Apply existing migrations
 
-Используется в CI и продакшне — применяет только уже созданные миграции без изменения схемы:
+Used in CI and production — applies only already-created migrations without modifying the schema:
 
 ```bash
 npx prisma migrate deploy
 ```
 
-### Создать новую миграцию (разработка)
+### Create a new migration (development)
 
-После изменения `prisma/schema.prisma` создать и применить миграцию:
+After editing `prisma/schema.prisma`, create and apply a migration:
 
 ```bash
-npx prisma migrate dev --name <название_миграции>
+npx prisma migrate dev --name <migration_name>
 ```
 
-Примеры названий: `add_user_avatar`, `add_poll_tags`, `rename_response_field`.
+Example names: `add_user_avatar`, `add_poll_tags`, `rename_response_field`.
 
-Команда:
-1. Сравнивает текущую схему с состоянием БД
-2. Генерирует SQL-файл миграции в `prisma/migrations/`
-3. Применяет миграцию к локальной БД
-4. Перегенерирует Prisma Client
+The command:
+1. Compares the current schema against the database state
+2. Generates a SQL migration file in `prisma/migrations/`
+3. Applies the migration to the local database
+4. Regenerates the Prisma Client
 
-### Просмотр статуса миграций
+### Check migration status
 
 ```bash
 npx prisma migrate status
 ```
 
-Показывает какие миграции применены, а какие ожидают применения.
+Shows which migrations have been applied and which are pending.
 
-### Сброс базы данных (только разработка!)
+### Reset the database (development only!)
 
-Удаляет все данные и применяет все миграции заново:
+Drops all data and re-applies all migrations from scratch:
 
 ```bash
 npx prisma migrate reset
 ```
 
-> ⚠️ Никогда не используйте в продакшне — все данные будут удалены.
+> ⚠️ Never use in production — all data will be deleted.
 
-### Откат миграции
+### Roll back a migration
 
-Prisma не поддерживает автоматический откат. Для отката:
+Prisma does not support automatic rollbacks. To roll back:
 
-1. Создать новую миграцию, которая отменяет изменения:
+1. Create a new migration that reverts the changes:
    ```bash
-   npx prisma migrate dev --name revert_<название>
+   npx prisma migrate dev --name revert_<name>
    ```
-2. Вручную написать SQL в файле миграции
+2. Manually write the SQL in the migration file
 
-### Генерация Prisma Client
+### Regenerate Prisma Client
 
-После изменения схемы без создания миграции (например, только добавили индекс):
+After changing the schema without creating a migration (e.g., adding only an index):
 
 ```bash
 npx prisma generate
 ```
 
-### Просмотр данных в браузере (Prisma Studio)
+### Browse data in the browser (Prisma Studio)
 
-Визуальный редактор базы данных:
+Visual database editor:
 
 ```bash
 npx prisma studio
 ```
 
-Откроется на `http://localhost:5555`.
+Opens at `http://localhost:5555`.
 
 ---
 
-## Workflow разработки
+## Development Workflow
 
-### Типичный цикл при изменении схемы БД
-
-```
-1. Изменить prisma/schema.prisma
-2. npx prisma migrate dev --name <описание_изменения>
-3. Prisma Client автоматически перегенерируется
-4. Обновить сервисы/DTO под новую схему
-5. Запустить тесты: npm test
-```
-
-### Типичный цикл при добавлении нового эндпоинта
+### Typical cycle when changing the database schema
 
 ```
-1. Создать/обновить DTO в src/<module>/dto/
-2. Добавить метод в сервис src/<module>/<module>.service.ts
-3. Добавить эндпоинт в контроллер src/<module>/<module>.controller.ts
-4. Написать unit-тест в src/<module>/<module>.service.spec.ts
-5. Добавить E2E-тест в test/app.e2e-spec.ts
-6. Проверить типы: npm run check:ts
-7. Запустить тесты: npm test && npm run test:e2e
+1. Edit prisma/schema.prisma
+2. npx prisma migrate dev --name <change_description>
+3. Prisma Client is regenerated automatically
+4. Update services/DTOs for the new schema
+5. Run tests: npm test
 ```
 
-### Отладка
+### Typical cycle when adding a new endpoint
 
-Запуск с дебаггером (Node.js inspector на порту 9229):
+```
+1. Create/update DTO in src/<module>/dto/
+2. Add method to service src/<module>/<module>.service.ts
+3. Add endpoint to controller src/<module>/<module>.controller.ts
+4. Write unit test in src/<module>/<module>.service.spec.ts
+5. Add E2E test in test/app.e2e-spec.ts
+6. Check types: npm run check:ts
+7. Run tests: npm test && npm run test:e2e
+```
+
+### Debugging
+
+Start with the debugger (Node.js inspector on port 9229):
 
 ```bash
 cd backend && npm run start:debug
 ```
 
-Подключиться через VS Code: `Run > Attach to Node Process`.
+Connect via VS Code: `Run > Attach to Node Process`.
 
 ---
 
-## Доступные скрипты
+## Available Scripts
 
-### Из корня монорепо
+### From the monorepo root
 
-| Команда | Описание |
+| Command | Description |
 |---|---|
-| `npm run start:dev` | Запуск бэкенда в режиме разработки |
-| `npm test` | Запуск unit-тестов во всех воркспейсах |
-| `npm run test:e2e` | Запуск E2E-тестов бэкенда |
-| `npm run check:ts` | Проверка TypeScript во всех воркспейсах |
-| `npm run lint` | Линтинг во всех воркспейсах |
-| `npm run build` | Сборка всех воркспейсов |
+| `npm run start:dev` | Start the backend in development mode |
+| `npm test` | Run unit tests in all workspaces |
+| `npm run test:e2e` | Run backend E2E tests |
+| `npm run check:ts` | TypeScript check in all workspaces |
+| `npm run lint` | Lint all workspaces |
+| `npm run build` | Build all workspaces |
 
-### Из директории `backend/`
+### From the `backend/` directory
 
-| Команда | Описание |
+| Command | Description |
 |---|---|
-| `npm run start:dev` | Запуск в режиме разработки с hot-reload |
-| `npm run start:prod` | Запуск собранного приложения |
-| `npm run build` | Сборка TypeScript в `dist/` |
-| `npm run check:ts` | Проверка типов TypeScript без компиляции |
-| `npm test` | Запуск unit-тестов |
-| `npm run test:watch` | Запуск тестов в watch-режиме |
-| `npm run test:cov` | Запуск тестов с отчётом о покрытии |
-| `npm run test:e2e` | Запуск E2E-тестов (требует БД) |
-| `npm run lint` | Линтинг кода |
-| `npm run format` | Форматирование кода через Prettier |
+| `npm run start:dev` | Start in development mode with hot-reload |
+| `npm run start:prod` | Start the compiled application |
+| `npm run build` | Compile TypeScript to `dist/` |
+| `npm run check:ts` | TypeScript type check without compilation |
+| `npm test` | Run unit tests |
+| `npm run test:watch` | Run tests in watch mode |
+| `npm run test:cov` | Run tests with coverage report |
+| `npm run test:e2e` | Run E2E tests (requires database) |
+| `npm run lint` | Lint the code |
+| `npm run format` | Format code with Prettier |
 
 ---
 
-## Документация API
+## API Documentation
 
-После запуска сервера Swagger UI доступен по адресу:
+After starting the server, Swagger UI is available at:
 
 ```
 http://localhost:3000/api/docs
 ```
 
-### Базовый URL
+### Base URL
 
 ```
 http://localhost:3000/api/v1
 ```
 
-### Основные эндпоинты
+### Key Endpoints
 
-| Метод | Путь | Описание | Auth |
+| Method | Path | Description | Auth |
 |---|---|---|---|
-| `POST` | `/auth/register` | Регистрация пользователя | — |
-| `POST` | `/auth/login` | Вход в систему | — |
-| `POST` | `/auth/refresh` | Обновление access-токена | cookie |
-| `POST` | `/auth/logout` | Выход из системы | Bearer |
-| `GET` | `/auth/me` | Текущий пользователь | Bearer |
-| `GET` | `/polls` | Список публичных опросов | — |
-| `POST` | `/polls` | Создать опрос | Bearer |
-| `GET` | `/polls/my` | Мои опросы | Bearer |
-| `GET` | `/polls/:slug` | Получить опрос | optional |
-| `PATCH` | `/polls/:slug` | Обновить опрос | Bearer (owner) |
-| `DELETE` | `/polls/:slug` | Удалить опрос | Bearer (owner) |
-| `PUT` | `/polls/:slug/questions` | Заменить вопросы | Bearer (owner) |
-| `POST` | `/polls/:slug/responses` | Отправить ответ | optional |
-| `GET` | `/polls/:slug/responses` | Получить ответы | Bearer (owner) |
-| `GET` | `/polls/:slug/analytics` | Аналитика опроса | Bearer (owner) |
-| `GET` | `/polls/:slug/analytics/export` | Экспорт в CSV | Bearer (owner) |
-| `GET` | `/admin/users` | Список пользователей | Bearer (admin) |
-| `PATCH` | `/admin/users/:id` | Изменить роль | Bearer (admin) |
-| `GET` | `/admin/polls` | Все опросы | Bearer (admin) |
+| `POST` | `/auth/register` | Register a user | — |
+| `POST` | `/auth/login` | Log in | — |
+| `POST` | `/auth/refresh` | Refresh access token | cookie |
+| `POST` | `/auth/logout` | Log out | Bearer |
+| `GET` | `/auth/me` | Current user | Bearer |
+| `GET` | `/polls` | List public polls | — |
+| `POST` | `/polls` | Create a poll | Bearer |
+| `GET` | `/polls/my` | My polls | Bearer |
+| `GET` | `/polls/:slug` | Get a poll | optional |
+| `PATCH` | `/polls/:slug` | Update a poll | Bearer (owner) |
+| `DELETE` | `/polls/:slug` | Delete a poll | Bearer (owner) |
+| `PUT` | `/polls/:slug/questions` | Replace questions | Bearer (owner) |
+| `POST` | `/polls/:slug/responses` | Submit a response | optional |
+| `GET` | `/polls/:slug/responses` | Get responses | Bearer (owner) |
+| `GET` | `/polls/:slug/analytics` | Poll analytics | Bearer (owner) |
+| `GET` | `/polls/:slug/analytics/export` | Export to CSV | Bearer (owner) |
+| `GET` | `/admin/users` | List users | Bearer (admin) |
+| `PATCH` | `/admin/users/:id` | Change role | Bearer (admin) |
+| `GET` | `/admin/polls` | All polls | Bearer (admin) |
 
 ---
 
-## Тесты
+## Tests
 
-### Unit-тесты
+### Unit tests
 
 ```bash
-# из корня монорепо
+# from the monorepo root
 npm test
 
-# или из backend/
+# or from backend/
 cd backend && npm test
 ```
 
-Покрывают все сервисы (`AuthService`, `PollsService`, `ResponsesService`, `AnalyticsService`, `UsersService`) и утилиты. Используют моки — база данных не требуется.
+Covers all services (`AuthService`, `PollsService`, `ResponsesService`, `AnalyticsService`, `UsersService`) and utilities. Uses mocks — no database required.
 
-### E2E-тесты
+### E2E tests
 
-Требуют запущенной базы данных:
+Require a running database:
 
 ```bash
-# убедиться что БД запущена
+# ensure the database is running
 docker-compose up postgres -d
 
-# из корня монорепо
+# from the monorepo root
 npm run test:e2e
 
-# или из backend/
+# or from backend/
 cd backend && npm run test:e2e
 ```
 
-E2E-тесты покрывают полный цикл: регистрация → вход → создание опроса → отправка ответов → аналитика → удаление.
+E2E tests cover the full cycle: registration → login → poll creation → response submission → analytics → deletion.
 
-### Покрытие кода
+### Code coverage
 
 ```bash
 cd backend && npm run test:cov
 ```
 
-Отчёт сохраняется в `backend/coverage/`.
+Report is saved to `backend/coverage/`.
 
-### Проверка типов TypeScript
+### TypeScript type check
 
 ```bash
-# из корня монорепо
+# from the monorepo root
 npm run check:ts
 
-# или из backend/
+# or from backend/
 cd backend && npm run check:ts
 ```
 
 ---
 
-## Запуск через Docker Compose
+## Running via Docker Compose
 
-Из корня монорепозитория запустить весь стек (PostgreSQL + backend):
+From the monorepo root, start the full stack (PostgreSQL + backend):
 
 ```bash
 docker-compose up --build
 ```
 
-Только PostgreSQL (для локальной разработки):
+PostgreSQL only (for local development):
 
 ```bash
 docker-compose up postgres -d
@@ -348,37 +348,37 @@ docker-compose up postgres -d
 
 ---
 
-## Структура проекта
+## Project Structure
 
 ```
 backend/
 ├── src/
-│   ├── auth/               # Аутентификация (JWT, стратегии, гарды)
+│   ├── auth/               # Authentication (JWT, strategies, guards)
 │   │   ├── dto/            # RegisterDto, LoginDto
 │   │   ├── guards/         # JwtAuthGuard, JwtRefreshGuard, OptionalJwtGuard
 │   │   └── strategies/     # JwtStrategy, JwtRefreshStrategy
-│   ├── users/              # Управление пользователями
-│   ├── polls/              # CRUD опросов
+│   ├── users/              # User management
+│   ├── polls/              # Poll CRUD
 │   │   ├── dto/            # CreatePollDto, UpdatePollDto, PollQueryDto
 │   │   └── guards/         # PollOwnerGuard
-│   ├── questions/          # Управление вопросами (ReplaceQuestionsDto)
-│   ├── responses/          # Отправка и получение ответов
-│   ├── analytics/          # Аналитика и CSV-экспорт
-│   ├── admin/              # Административные эндпоинты
+│   ├── questions/          # Question management (ReplaceQuestionsDto)
+│   ├── responses/          # Response submission and retrieval
+│   ├── analytics/          # Analytics and CSV export
+│   ├── admin/              # Admin endpoints
 │   │   └── guards/         # AdminGuard
 │   ├── common/
 │   │   ├── decorators/     # @CurrentUser(), @Public()
 │   │   ├── filters/        # HttpExceptionFilter
 │   │   └── utils/          # generateSlug(), getPaginationParams()
-│   ├── prisma/             # PrismaService и PrismaModule
+│   ├── prisma/             # PrismaService and PrismaModule
 │   ├── app.module.ts
 │   └── main.ts
 ├── prisma/
-│   ├── schema.prisma       # Схема базы данных
-│   └── migrations/         # SQL-миграции
+│   ├── schema.prisma       # Database schema
+│   └── migrations/         # SQL migrations
 ├── test/
-│   ├── app.e2e-spec.ts     # E2E-тесты
-│   └── jest-e2e.json       # Конфигурация Jest для E2E
+│   ├── app.e2e-spec.ts     # E2E tests
+│   └── jest-e2e.json       # Jest config for E2E
 ├── .env.example
 ├── Dockerfile
 └── package.json
@@ -386,14 +386,14 @@ backend/
 
 ---
 
-## Переменные окружения
+## Environment Variables
 
-| Переменная | Описание | Пример |
+| Variable | Description | Example |
 |---|---|---|
-| `DATABASE_URL` | Строка подключения к PostgreSQL | `postgresql://user:pass@localhost:5432/polls` |
-| `JWT_ACCESS_SECRET` | Секрет для подписи access-токенов | `change_me_access` |
-| `JWT_REFRESH_SECRET` | Секрет для подписи refresh-токенов | `change_me_refresh` |
-| `JWT_ACCESS_EXPIRES_IN` | TTL access-токена | `15m` |
-| `JWT_REFRESH_EXPIRES_IN` | TTL refresh-токена | `7d` |
-| `FRONTEND_URL` | URL фронтенда для CORS | `http://localhost:5173` |
-| `PORT` | Порт сервера | `3000` |
+| `DATABASE_URL` | PostgreSQL connection string | `postgresql://user:pass@localhost:5432/polls` |
+| `JWT_ACCESS_SECRET` | Secret for signing access tokens | `change_me_access` |
+| `JWT_REFRESH_SECRET` | Secret for signing refresh tokens | `change_me_refresh` |
+| `JWT_ACCESS_EXPIRES_IN` | Access token TTL | `15m` |
+| `JWT_REFRESH_EXPIRES_IN` | Refresh token TTL | `7d` |
+| `FRONTEND_URL` | Frontend URL for CORS | `http://localhost:5173` |
+| `PORT` | Server port | `3000` |

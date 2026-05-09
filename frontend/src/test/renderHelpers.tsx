@@ -4,7 +4,7 @@
 import { type ReactElement } from 'react'
 import { render, type RenderOptions } from '@testing-library/react'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { MemoryRouter, type MemoryRouterProps } from 'react-router-dom'
+import { MemoryRouter, Routes, Route, type MemoryRouterProps } from 'react-router-dom'
 import { useAuthStore } from '../store/authStore'
 import type { User } from '../types/user'
 
@@ -20,6 +20,12 @@ export function createTestQueryClient(): QueryClient {
 
 interface RenderWithProvidersOptions extends RenderOptions {
   routerProps?: MemoryRouterProps
+  /**
+   * When provided, wraps the component in a `<Routes><Route path={routePattern} element={ui} /></Routes>`
+   * so that `useParams()` resolves correctly. The `routerProps.initialEntries` must include a matching URL.
+   * Example: routePattern="/:slug" with initialEntries=["/my-poll"]
+   */
+  routePattern?: string
   queryClient?: QueryClient
   /** Pre-populate the auth store with this user */
   user?: User | null
@@ -33,6 +39,7 @@ export function renderWithProviders(
   ui: ReactElement,
   {
     routerProps = {},
+    routePattern,
     queryClient,
     user,
     ...renderOptions
@@ -54,7 +61,15 @@ export function renderWithProviders(
   function Wrapper({ children }: { children: React.ReactNode }) {
     return (
       <QueryClientProvider client={client}>
-        <MemoryRouter {...routerProps}>{children}</MemoryRouter>
+        <MemoryRouter {...routerProps}>
+          {routePattern ? (
+            <Routes>
+              <Route path={routePattern} element={children} />
+            </Routes>
+          ) : (
+            children
+          )}
+        </MemoryRouter>
       </QueryClientProvider>
     )
   }

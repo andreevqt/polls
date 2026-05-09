@@ -11,6 +11,8 @@ import LandingPage from './pages/LandingPage';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 import DashboardPage from './pages/DashboardPage';
+import PollPage from './pages/PollPage';
+import PollAnalyticsPage from './pages/PollAnalyticsPage';
 import NotFoundPage from './pages/NotFoundPage';
 
 export const router = createBrowserRouter([
@@ -24,6 +26,7 @@ export const router = createBrowserRouter([
     element: <ProtectedRoute />,
     children: [
       { path: '/dashboard', element: <DashboardPage /> },
+      { path: '/dashboard/polls/:slug/analytics', element: <PollAnalyticsPage /> },
     ],
   },
 
@@ -43,6 +46,9 @@ export const router = createBrowserRouter([
       },
     ],
   },
+
+  // Public poll-taking page — must come after all named routes, before catch-all
+  { path: '/:slug', element: <PollPage /> },
 
   // 404
   { path: '*', element: <NotFoundPage /> },

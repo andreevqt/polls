@@ -46,6 +46,14 @@ export interface PollSummary {
   responseCount: number;
   owner: PollOwner;
   createdAt: string;
+  updatedAt?: string;
+}
+
+/** Full poll detail including questions — returned by GET /polls/:slug */
+export interface PollDetail extends PollSummary {
+  questions: Question[];
+  accessToken: string | null;
+  updatedAt: string;
 }
 
 export interface PaginatedPolls {
@@ -53,4 +61,21 @@ export interface PaginatedPolls {
   total: number;
   page: number;
   limit: number;
+}
+
+// ─── Response submission types ────────────────────────────────────────────────
+
+export interface AnswerPayload {
+  questionId: string;
+  /** For SINGLE_CHOICE */
+  optionId?: string;
+  /** For MULTIPLE_CHOICE */
+  optionIds?: string[];
+  /** For TEXT */
+  textValue?: string;
+}
+
+export interface SubmitResponsePayload {
+  answers: AnswerPayload[];
+  respondentFingerprint: string;
 }
